@@ -1,9 +1,13 @@
+using bbpPairings_dotnet_wrapper;
+using Microsoft.AspNetCore.Mvc;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.Configure<ExecutableOptions>(builder.Configuration.GetSection("Executable"));
+builder.Services.AddScoped<Pairer>();
 
 var app = builder.Build();
 
@@ -16,29 +20,14 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/weatherforecast", () =>
+app.MapGet("/generate-dummy-tournaments", async ([FromServices] Pairer pairer, [FromQuery] int playersNumber, [FromQuery] int roundsNumber) =>
     {
-        var forecast = Enumerable.Range(1, 5).Select(index =>
-                new WeatherForecast
-                (
-                    DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-                    Random.Shared.Next(-20, 55),
-                    summaries[Random.Shared.Next(summaries.Length)]
-                ))
-            .ToArray();
-        return forecast;
+        string output = await pairer.GenerateRandomTournament(PairingSystem.Fast, playersNumber, roundsNumber);
+        
+        
+
+        return Results.Ok(output.Split("\r"));
     })
-    .WithName("GetWeatherForecast")
     .WithOpenApi();
 
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
