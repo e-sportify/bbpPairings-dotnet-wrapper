@@ -1,0 +1,6 @@
+﻿services:
+  bbppairings-dotnet-wrapper:
+    image: bbppairings-dotnet-wrapper
+    build:
+      context: .
+      dockerfile: bbpPairings-dotnet-wrapper/Dockerfile
