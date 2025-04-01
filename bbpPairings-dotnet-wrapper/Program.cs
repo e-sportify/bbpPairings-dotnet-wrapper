@@ -23,8 +23,6 @@ app.UseHttpsRedirection();
 app.MapGet("/generate-dummy-tournaments", async ([FromServices] Pairer pairer, [FromQuery] int playersNumber, [FromQuery] int roundsNumber) =>
     {
         string output = await pairer.GenerateRandomTournament(PairingSystem.Fast, playersNumber, roundsNumber);
-        
-        
 
         return Results.Ok(output.Split("\r"));
     })

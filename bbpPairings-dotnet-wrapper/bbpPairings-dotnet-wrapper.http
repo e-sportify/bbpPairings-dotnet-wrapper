@@ -1,6 +1,6 @@
-@bbpPairings_dotnet_wrapper_HostAddress = http://localhost:5199
+@host_address = http://localhost:5199
 
-GET {{bbpPairings_dotnet_wrapper_HostAddress}}/weatherforecast/
+GET {{host_address}}/generate-dummy-tournaments?playersNumber=5000&roundsNumber=21
 Accept: application/json
 
 ###
