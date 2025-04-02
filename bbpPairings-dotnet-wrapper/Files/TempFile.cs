@@ -22,5 +22,6 @@ public class TempFile : IDisposable
     {
         Reader.Dispose();
         Writer.Dispose();
+        File.Delete(FilePath);
     }
 }

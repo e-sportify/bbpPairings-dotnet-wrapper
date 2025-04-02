@@ -19,34 +19,31 @@ public sealed class Pair(Pairer pairer) : Endpoint<Pair.Request, Pair.Response>
             TotalRounds = req.NumberOfRounds,
         };
         List<Player> players = [];
-        Dictionary<Guid, int> playersMap = [];
-        int playerNumber = 1;
-        foreach (var player in req.Players)
-        {
-            playersMap.Add(player.Id, playerNumber++);
-        }
+        Dictionary<Guid, int> playerNumbersMap = req.Players
+            .Select((player, index) => new { player.Id, Number = index + 1 })
+            .ToDictionary(p => p.Id, p => p.Number);
 
-        foreach (var p in req.Players)
+        foreach (Request.Player reqPlayer in req.Players)
         {
             Player player = new()
             {
-                Number = playersMap[p.Id],
+                Number = playerNumbersMap[reqPlayer.Id],
                 Results = [],
-                Points = p.Points,
-                Name = playersMap[p.Id].ToString(),
+                Points = reqPlayer.Points,
+                Name = playerNumbersMap[reqPlayer.Id].ToString(),
             };
             bool hasPlayed = false;
             for (int i = 1; i <= req.NumberOfRoundsPlayed; i++)
             {
-                var m = p.Matches.FirstOrDefault(m => m.RoundIndex == i);
-                var gameResult = new GameResult
+                Request.Player.Match? m = reqPlayer.Matches.FirstOrDefault(m => m.RoundIndex == i);
+                GameResult gameResult = new()
                 {
                     OpponentNumber = 0,
                     Result = hasPlayed ? '-' : 'H',
                 };
                 if (m is not null)
                 {
-                    gameResult.OpponentNumber = playersMap[m.OpponentId];
+                    gameResult.OpponentNumber = playerNumbersMap[m.OpponentId];
                     gameResult.Result = m.Won is null ? '=' : m.Won.Value ? '1' : '0';
                     gameResult.IsWhite = m.IsWhite;
                 }
@@ -61,27 +58,24 @@ public sealed class Pair(Pairer pairer) : Endpoint<Pair.Request, Pair.Response>
             .OrderByDescending(p => p.Points)
             .ThenBy(p => p.Number).ToList();
 
-        var rankCounter = 1;
-        foreach (var player in players)
-        {
-            player.Rank = rankCounter++;
-        }
+        int rankCounter = 1;
+        players.ForEach(player => player.Rank = rankCounter++);
 
         tournament.Players = players;
 
-        var output = await pairer.Pair(tournament, PairingSystem.Dutch);
-        var idMaps = playersMap.ToDictionary(kv => kv.Value, kv => kv.Key);
-        var pairs = output
+        List<string> output = await pairer.Pair(tournament, req.PairingSystem);
+        Dictionary<int, Guid> playerIdsMap = playerNumbersMap.ToDictionary(kv => kv.Value, kv => kv.Key);
+        List<Response.Pair> pairs = output
             .Select(l => l.Split(" "))
             .Where(ps => ps.Length == 2)
             .Select(ps =>
             {
-                var p1 = int.Parse(ps[0]);
-                var p2 = int.Parse(ps[1]);
+                int p1 = int.Parse(ps[0]);
+                int p2 = int.Parse(ps[1]);
                 return new Response.Pair
                 {
-                    Player1 = idMaps[p1],
-                    Player2 = idMaps[p2],
+                    Player1 = playerIdsMap[p1],
+                    Player2 = playerIdsMap[p2],
                 };
             })
             .ToList();
@@ -96,6 +90,7 @@ public sealed class Pair(Pairer pairer) : Endpoint<Pair.Request, Pair.Response>
     {
         public int NumberOfRounds { get; set; }
         public int NumberOfRoundsPlayed { get; set; }
+        public PairingSystem PairingSystem { get; set; }
         public ICollection<Player> Players { get; set; } = [];
 
         public class Player
