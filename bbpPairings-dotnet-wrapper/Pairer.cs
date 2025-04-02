@@ -5,7 +5,7 @@ using Microsoft.Extensions.Options;
 
 namespace bbpPairings_dotnet_wrapper;
 
-internal sealed class Pairer(IOptionsSnapshot<ExecutableOptions> optionsSnapshot)
+public sealed class Pairer(IOptionsSnapshot<ExecutableOptions> optionsSnapshot)
 {
     private string GetPairingSystemFlag(PairingSystem pairingSystem)
     {
@@ -17,14 +17,27 @@ internal sealed class Pairer(IOptionsSnapshot<ExecutableOptions> optionsSnapshot
             _ => "--dutch",
         };
     }
+
     public async Task<string> GenerateRandomTournament(
         PairingSystem pairingSystem,
         int playersNumber,
         int roundsNumber)
     {
-        using ConfigurationFile inputFile = ConfigurationFile.Create(playersNumber, roundsNumber);
+        using ConfigurationFile inputFile = ConfigurationFile.Create(
+            playersNumber,
+            roundsNumber,
+            40,
+            5,
+            null,
+            null,
+            1,
+            0.5f,
+            0,
+            0.7f,
+            0.3f,
+            0.4f);
         using TempFile outputFile = TempFile.Create();
-        
+
         await inputFile.Writer.WriteAsync(inputFile.ToString());
         await inputFile.Writer.FlushAsync();
 
@@ -47,9 +60,39 @@ internal sealed class Pairer(IOptionsSnapshot<ExecutableOptions> optionsSnapshot
         await process.WaitForExitAsync();
 
         string output = await outputFile.Reader.ReadToEndAsync();
-        var parser = new Parser();
-        var res = parser.ParseTrfFile(outputFile.FilePath);
-        
+
         return output;
+    }
+
+    public async Task<List<string>> Pair(Tournament tournament, PairingSystem pairingSystem)
+    {
+        using TempFile inputFile = TempFile.Create();
+        using TempFile outputFile = TempFile.Create();
+
+        var s = tournament.ToString();
+        await inputFile.Writer.WriteAsync(s);
+        await inputFile.Writer.FlushAsync();
+
+        string pairingSystemFlag = GetPairingSystemFlag(pairingSystem);
+        ProcessStartInfo psi = new()
+        {
+            FileName = optionsSnapshot.Value.FileName,
+            Arguments = $"{pairingSystemFlag} {inputFile.FilePath} -p {outputFile.FilePath}",
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            UseShellExecute = false, // Required for redirection
+            CreateNoWindow = true, // Prevents opening a new window
+        };
+
+        using Process process = new();
+
+        process.StartInfo = psi;
+        process.Start();
+
+        await process.WaitForExitAsync();
+
+        string output = await outputFile.Reader.ReadToEndAsync();
+
+        return output.Split("\n").ToList();
     }
 }
