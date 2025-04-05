@@ -89,8 +89,8 @@ public sealed class Pair(Pairer pairer) : Endpoint<Pair.Request, Pair.Response>
                 int p2 = int.Parse(ps[1]);
                 return new Response.Pair
                 {
-                    Player1 = playerIdsMap[p1],
-                    Player2 = playerIdsMap[p2],
+                    Player1 = playerIdsMap.TryGetValue(p1, out var p1Id) ? p1Id : Guid.Empty,
+                    Player2 = playerIdsMap.TryGetValue(p2, out var p2Id) ? p2Id : Guid.Empty,
                 };
             })
             .ToList();

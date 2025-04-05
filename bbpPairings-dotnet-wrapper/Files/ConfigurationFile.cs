@@ -13,8 +13,10 @@ public sealed class ConfigurationFile : TempFile
     public float? PointsForWin { get; set; } = 1;
     public float? PointsForDraw { get; set; } = 0.5f;
     public float? PointsForLoss { get; set; } = 0;
+    // zero point bye
     public float? PointsForZPB { get; set; } = 0;
     public float? PointsForForfeitLoss { get; set; } = 0;
+    // pairing allocated bye
     public float? PointsForPAB { get; set; } = 1;
 
     public override string ToString()
