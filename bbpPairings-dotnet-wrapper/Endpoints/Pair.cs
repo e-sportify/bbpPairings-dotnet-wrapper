@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using bbpPairings_dotnet_wrapper.Trf;
 using FastEndpoints;
 
@@ -32,19 +33,32 @@ public sealed class Pair(Pairer pairer) : Endpoint<Pair.Request, Pair.Response>
                 Points = reqPlayer.Points,
                 Name = playerNumbersMap[reqPlayer.Id].ToString(),
             };
-            bool hasPlayed = false;
             for (int i = 1; i <= req.NumberOfRoundsPlayed; i++)
             {
                 Request.Player.Match? m = reqPlayer.Matches.FirstOrDefault(m => m.RoundIndex == i);
                 GameResult gameResult = new()
                 {
                     OpponentNumber = 0,
-                    Result = hasPlayed ? '-' : 'H',
+                    Result = '-',
                 };
                 if (m is not null)
                 {
                     gameResult.OpponentNumber = playerNumbersMap[m.OpponentId];
-                    gameResult.Result = m.Won is null ? '=' : m.Won.Value ? '1' : '0';
+                    // gameResult.Result = m.Won is null ? '=' : m.Won.Value ? '1' : '0';
+                    gameResult.Result = m.Result switch
+                    {
+                        Request.Player.MatchResult.Won => '1',
+                        Request.Player.MatchResult.Lost => '0',
+                        Request.Player.MatchResult.Draw => '=',
+                        Request.Player.MatchResult.WonForfeited => '+',
+                        Request.Player.MatchResult.LostForfeited => '-',
+                        Request.Player.MatchResult.FullPointBye => 'F',
+                        Request.Player.MatchResult.HalfPointBye => 'H',
+                        Request.Player.MatchResult.PairingAllocatedBye => 'U',
+                        Request.Player.MatchResult.ZeroPointBye => 'Z',
+                        _ => throw new InvalidEnumArgumentException(),
+                    };
+                    
                     gameResult.IsWhite = m.IsWhite;
                 }
 
@@ -56,7 +70,8 @@ public sealed class Pair(Pairer pairer) : Endpoint<Pair.Request, Pair.Response>
 
         players = players
             .OrderByDescending(p => p.Points)
-            .ThenBy(p => p.Number).ToList();
+            .ThenBy(p => p.Number)
+            .ToList();
 
         int rankCounter = 1;
         players.ForEach(player => player.Rank = rankCounter++);
@@ -74,8 +89,8 @@ public sealed class Pair(Pairer pairer) : Endpoint<Pair.Request, Pair.Response>
                 int p2 = int.Parse(ps[1]);
                 return new Response.Pair
                 {
-                    Player1 = playerIdsMap[p1],
-                    Player2 = playerIdsMap[p2],
+                    Player1 = playerIdsMap.TryGetValue(p1, out var p1Id) ? p1Id : Guid.Empty,
+                    Player2 = playerIdsMap.TryGetValue(p2, out var p2Id) ? p2Id : Guid.Empty,
                 };
             })
             .ToList();
@@ -102,12 +117,21 @@ public sealed class Pair(Pairer pairer) : Endpoint<Pair.Request, Pair.Response>
             public sealed class Match
             {
                 public int RoundIndex { get; set; }
-
                 public Guid OpponentId { get; set; }
-
-                // null means draw
-                public bool? Won { get; set; }
+                public MatchResult Result { get; set; }
                 public bool IsWhite { get; set; }
+            }
+            public enum MatchResult
+            {
+                Won,
+                Lost,
+                Draw,
+                WonForfeited,
+                LostForfeited,
+                HalfPointBye,
+                FullPointBye,
+                PairingAllocatedBye,
+                ZeroPointBye,
             }
         }
     }
