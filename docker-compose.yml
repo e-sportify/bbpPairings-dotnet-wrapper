@@ -1,6 +1,8 @@
 ﻿services:
   bbppairings-dotnet-wrapper:
     image: bbppairings-dotnet-wrapper
+    ports:
+      - 8082:8080
     build:
       context: .
-      dockerfile: bbpPairings-dotnet-wrapper/Dockerfile
+      dockerfile: Dockerfile
