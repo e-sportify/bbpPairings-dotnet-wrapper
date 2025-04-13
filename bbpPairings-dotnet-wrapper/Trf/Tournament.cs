@@ -19,7 +19,12 @@ public class Tournament
         string totalRounds = $"XXR {TotalRounds}";
         string initColor = $"XXC white1";
         var players = Players.Select(p => p.ToString());
-        var s = $"{name}\n{totalRounds}\n{initColor}\n{string.Join("\n", players)}";
+        var advancedPlayers = Players
+            .Where(pl => pl.IsAdvanced || pl.IsEliminated)
+            .Select(p => p.ToAnotherString())
+            .ToList();
+        var str = advancedPlayers.Count > 0 ? $"\n{string.Join("\n", advancedPlayers)}" : string.Empty;
+        var s = $"{name}\n{totalRounds}\n{initColor}\n{string.Join("\n", players)}{str}";;
         return s;
     }
 }

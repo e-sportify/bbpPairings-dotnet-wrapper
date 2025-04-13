@@ -32,6 +32,8 @@ public sealed class Pair(Pairer pairer) : Endpoint<Pair.Request, Pair.Response>
                 Results = [],
                 Points = reqPlayer.Points,
                 Name = playerNumbersMap[reqPlayer.Id].ToString(),
+                IsAdvanced = reqPlayer.Status == Request.Player.PlayerStatus.Qualify,
+                IsEliminated = reqPlayer.Status == Request.Player.PlayerStatus.Eliminated,
             };
             for (int i = 1; i <= req.NumberOfRoundsPlayed; i++)
             {
@@ -43,7 +45,7 @@ public sealed class Pair(Pairer pairer) : Endpoint<Pair.Request, Pair.Response>
                 };
                 if (m is not null)
                 {
-                    gameResult.OpponentNumber = playerNumbersMap[m.OpponentId];
+                    gameResult.OpponentNumber = playerNumbersMap.GetValueOrDefault(m.OpponentId, 0);
                     // gameResult.Result = m.Won is null ? '=' : m.Won.Value ? '1' : '0';
                     gameResult.Result = m.Result switch
                     {
@@ -113,13 +115,14 @@ public sealed class Pair(Pairer pairer) : Endpoint<Pair.Request, Pair.Response>
             public Guid Id { get; set; }
             public float Points { get; set; }
             public ICollection<Match> Matches { get; set; } = [];
+            public PlayerStatus Status { get; set; }
 
             public sealed class Match
             {
                 public int RoundIndex { get; set; }
                 public Guid OpponentId { get; set; }
                 public MatchResult Result { get; set; }
-                public bool IsWhite { get; set; }
+                public bool? IsWhite { get; set; }
             }
             public enum MatchResult
             {
@@ -132,6 +135,12 @@ public sealed class Pair(Pairer pairer) : Endpoint<Pair.Request, Pair.Response>
                 FullPointBye,
                 PairingAllocatedBye,
                 ZeroPointBye,
+            }
+            public enum PlayerStatus
+            {
+                Normal,
+                Qualify,
+                Eliminated,
             }
         }
     }
