@@ -8,7 +8,7 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 
 WORKDIR /bbp-bin
-RUN wget https://github.com/e-sportify/bbpPairings/releases/download/v4.1.2/bbpPairings-linux
+RUN wget https://github.com/e-sportify/bbpPairings/releases/download/v4.1.3/bbpPairings-linux
 
 WORKDIR /src
 COPY ["bbpPairings-dotnet-wrapper/bbpPairings-dotnet-wrapper.csproj", "bbpPairings-dotnet-wrapper/"]
