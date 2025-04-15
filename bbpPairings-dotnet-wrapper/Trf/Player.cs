@@ -15,23 +15,16 @@ public class Player
     public int Rank { get; set; }
     public List<float> TieBreaks { get; set; } = [];
     public List<GameResult> Results { get; set; } = [];
+    public bool IsAdvanced { get; set; }
+    public bool IsEliminated { get; set; }
 
     public override string ToString()
     {
-        string TryGet(object? value, int padding, bool isLeftPad)
-        {
-            if (value is null)
-            {
-                return string.Empty.PadLeft(padding);
-            }
-            return isLeftPad ? value.ToString().PadLeft(padding) : value.ToString().PadRight(padding);
-        }
-
         var results = Results.Select(r =>
         {
-            var opponent = TryGet(r.OpponentNumber, 4, true);
+            var opponent = r.OpponentNumber == 0 ? "    " : TryGet(r.OpponentNumber, 4, true);
             var res = r.Result;
-            var color = r.IsWhite is null ? '-' : r.IsWhite.Value ? 'w' : 'b';
+            var color = r.IsWhite is null ? ' ' : r.IsWhite.Value ? 'w' : 'b';
             return $"{opponent} {color} {res}";
         });
         var number = TryGet(Number, 4, true);
@@ -45,7 +38,30 @@ public class Player
         var points = TryGet(Points.ToString("F1"), 4, true);
         var rank = TryGet(Rank, 4, false);
         var resultsStr = string.Join("  ", results);
-        var s = $"001 {number} {sex} {title} {name} {fideRating} {federation} {fideNumber} {birthdate} {points} {rank}  {resultsStr}";
+        var s =
+            $"001 {number} {sex} {title} {name} {fideRating} {federation} {fideNumber} {birthdate} {points} {rank}  {resultsStr}";
         return s;
+    }
+
+    public string ToAnotherString()
+    {
+        if (!IsAdvanced) return string.Empty;
+
+        string number = TryGet(Number, 4, true);
+        string sex = TryGet(string.Empty, 1, true);
+        string title = TryGet(string.Empty, 3, true);
+        string advancedString = IsAdvanced ? "1" : "2";
+
+        return $"XXS {number} {sex} {title} {advancedString}";
+    }
+
+    private string TryGet(object? value, int padding, bool isLeftPad)
+    {
+        if (value is null)
+        {
+            return string.Empty.PadLeft(padding);
+        }
+
+        return isLeftPad ? value.ToString().PadLeft(padding) : value.ToString().PadRight(padding);
     }
 }
