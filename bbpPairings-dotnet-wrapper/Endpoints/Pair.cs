@@ -18,6 +18,13 @@ public sealed class Pair(Pairer pairer) : Endpoint<Pair.Request, Pair.Response>
         {
             Name = "abc",
             TotalRounds = req.NumberOfRounds,
+            PlayedRounds = req.NumberOfRoundsPlayed,
+            PointsForWin = req.PointsForWin,
+            PointsForDraw = req.PointsForDraw,
+            PointsForLoss = req.PointsForLoss,
+            PointsForZPB = req.PointsForZPB,
+            PointsForForfeitLoss = req.PointsForForfeitLoss,
+            PointsForPAB = req.PointsForPAB,
         };
         List<Player> players = [];
         Dictionary<Guid, int> playerNumbersMap = req.Players
@@ -108,6 +115,12 @@ public sealed class Pair(Pairer pairer) : Endpoint<Pair.Request, Pair.Response>
         public int NumberOfRounds { get; set; }
         public int NumberOfRoundsPlayed { get; set; }
         public PairingSystem PairingSystem { get; set; }
+        public float? PointsForWin { get; set; }
+        public float? PointsForDraw { get; set; }
+        public float? PointsForLoss { get; set; }
+        public float? PointsForZPB { get; set; }
+        public float? PointsForForfeitLoss { get; set; }
+        public float? PointsForPAB { get; set; }
         public ICollection<Player> Players { get; set; } = [];
 
         public class Player

@@ -8,6 +8,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.Configure<ExecutableOptions>(builder.Configuration.GetSection("Executable"));
 builder.Services.AddScoped<Pairer>();
 builder.Services
+    
     .AddFastEndpoints()
     .SwaggerDocument();
 
@@ -16,7 +17,9 @@ var app = builder.Build();
 app.UseHttpsRedirection();
 app.UseRouting();
 
-app.UseFastEndpoints()
+app
+    .UseDefaultExceptionHandler()
+    .UseFastEndpoints()
     .UseSwaggerGen();
 
 app.Run();

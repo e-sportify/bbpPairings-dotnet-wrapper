@@ -89,9 +89,21 @@ public sealed class Pairer(IOptionsSnapshot<ExecutableOptions> optionsSnapshot)
         process.StartInfo = psi;
         process.Start();
 
+        var x = await process.StandardOutput.ReadToEndAsync();
+        var y = await process.StandardError.ReadToEndAsync();
         await process.WaitForExitAsync();
 
         string output = await outputFile.Reader.ReadToEndAsync();
+        
+        if (string.IsNullOrEmpty(output))
+        {
+            if (!string.IsNullOrEmpty(y) && y.Split(":").Length > 1)
+            {
+                string errorMessage = y.Split(":")[1].Trim();
+                throw new Exception(errorMessage);
+            }
+            throw new Exception();
+        }
 
         return output.Split("\n").ToList();
     }

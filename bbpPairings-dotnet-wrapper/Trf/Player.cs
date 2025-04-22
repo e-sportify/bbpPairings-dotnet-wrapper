@@ -1,4 +1,5 @@
 using System.Text;
+using bbpPairings_dotnet_wrapper.Utils;
 
 namespace bbpPairings_dotnet_wrapper.Trf;
 
@@ -20,26 +21,53 @@ public class Player
 
     public override string ToString()
     {
+        // var resultsFormatted = Results.Select(r =>
+        // {
+        //     var opponent = r.OpponentNumber == 0 ? "    " : r.OpponentNumber.Pad(4, true);
+        //     var color = r.IsWhite is null ? ' ' : (r.IsWhite.Value ? 'w' : 'b');
+        //     var res = r.Result;
+        //     return $"{opponent} {color} {res}";
+        // });
+        //
+        // var parts = new List<string>
+        // {
+        //     "001",
+        //     Number.Pad(4, true),
+        //     string.Empty.Pad(1, true),          // Sex
+        //     Title.Pad(3, true),
+        //     Name.Pad(29, false),
+        //     Rating.Pad(4, true),
+        //     Federation.Pad(4, true),
+        //     string.Empty.Pad(4, true),          // FIDE Number
+        //     string.Empty.Pad(19, true),         // Birthdate
+        //     Points.ToString("F1").Pad(4, true),
+        //     Rank.Pad(4, false)
+        // };
+        //
+        // // Add results, joined with two spaces
+        // var resultsStr = string.Join("  ", resultsFormatted);
+        // parts.Add(resultsStr);
+        //
+        // return string.Join(" ", parts);
         var results = Results.Select(r =>
         {
-            var opponent = r.OpponentNumber == 0 ? "    " : TryGet(r.OpponentNumber, 4, true);
+            var opponent = r.OpponentNumber == 0 ? "    " : r.OpponentNumber.Pad( 4, true);
             var res = r.Result;
             var color = r.IsWhite is null ? ' ' : r.IsWhite.Value ? 'w' : 'b';
             return $"{opponent} {color} {res}";
         });
-        var number = TryGet(Number, 4, true);
-        var sex = TryGet(string.Empty, 1, true);
-        var title = TryGet(Title, 3, true);
-        var name = TryGet(Name, 29, false);
-        var fideRating = TryGet(Rating, 4, true);
-        var federation = TryGet(Federation, 4, true);
-        var fideNumber = TryGet(string.Empty, 4, true);
-        var birthdate = TryGet(string.Empty, 19, true);
-        var points = TryGet(Points.ToString("F1"), 4, true);
-        var rank = TryGet(Rank, 4, false);
+        var number = Number.Pad(4, true);
+        var sex = string.Empty.Pad(1, true);
+        var title = Title.Pad(3, true);
+        var name = Name.Pad( 29, false);
+        var fideRating = Rating.Pad( 4, true);
+        var federation = Federation.Pad( 4, true);
+        var fideNumber = string.Empty.Pad( 4, true);
+        var birthdate = string.Empty.Pad( 19, true);
+        var points = Points.ToString("F1").Pad( 4, true);
+        var rank = Rank.Pad( 4, false);
         var resultsStr = string.Join("  ", results);
-        var s =
-            $"001 {number} {sex} {title} {name} {fideRating} {federation} {fideNumber} {birthdate} {points} {rank}  {resultsStr}";
+        var s = $"001 {number} {sex} {title} {name} {fideRating} {federation} {fideNumber} {birthdate} {points} {rank}  {resultsStr}";
         return s;
     }
 
